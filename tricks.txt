@@ -1,0 +1,140 @@
+================================================================================
+                    HOW TO WIN AGAINST THE CPU - PRACTICAL TRICKS
+================================================================================
+You play as RED (first move). CPU plays as YELLOW (second move).
+Board: 7 columns (0-6), 6 rows. Column 3 is the center. Pieces drop from top.
+================================================================================
+
+--------------------------------------------------------------------------------
+RULE 1: ALWAYS START WITH COLUMN 3 (CENTER)
+--------------------------------------------------------------------------------
+Connect4 is solved: the first player wins with perfect play. Column 3 is the
+only winning first move. Never open with 0, 1, 2, 4, 5, or 6 - you give away
+the advantage.
+
+--------------------------------------------------------------------------------
+RULE 2: BUILD TWO THREATS THAT NEED DIFFERENT BLOCKS
+--------------------------------------------------------------------------------
+A "fork" = two 3-in-a-rows that need different columns to block. CPU can only
+block one. Your two threats must NOT share the same blocking column.
+
+Example of a fork:
+  - Threat A: R-R-R in cols 1-2-3, need one more in col 2 (above)
+  - Threat B: R-R-R in cols 3-4-5, need one more in col 4 (above)
+  - CPU blocks col 2 -> you play col 4 and win
+  - CPU blocks col 4 -> you play col 2 and win
+
+--------------------------------------------------------------------------------
+EASY MODE - EXACT WINNING SEQUENCES (copy these moves)
+--------------------------------------------------------------------------------
+
+SEQUENCE A - Classic center fork (works when CPU stacks center):
+  You: 3   CPU: 3   You: 2   CPU: 2   You: 4   CPU: 4   You: 1
+  After move 6, you have R-R-R in cols 1-2-3 and R-R-R in cols 3-4-5.
+  CPU blocks one; you play the other and win.
+
+SEQUENCE B - If CPU plays column 2 after your R3:
+  You: 3   CPU: 2   You: 4   CPU: 3   You: 5   CPU: 4   You: 6
+  Build on the right. You get a horizontal or diagonal fork.
+
+SEQUENCE C - If CPU plays column 4 after your R3:
+  You: 3   CPU: 4   You: 2   CPU: 3   You: 1   CPU: 2   You: 0
+  Build on the left. Mirror of Sequence B.
+
+SEQUENCE D - Vertical stack trap (edge column):
+  You: 0   CPU: 3   You: 0   CPU: 3   You: 0   CPU: (any)   You: 0
+  Three in column 0. If CPU ignores, you win in col 0. If CPU blocks col 0,
+  you now have a stack - play col 1 or 6 to start a diagonal from that stack.
+
+SEQUENCE E - Diagonal trap:
+  You: 3   CPU: 2   You: 4   CPU: 3   You: 5   CPU: 4   You: 5
+  Build diagonal: pieces at (5,3), (4,4), (3,5). Play col 5 again - piece
+  drops to row 2. Now you have diagonal R-R-R-R. Win.
+
+--------------------------------------------------------------------------------
+MODERATE MODE - THE AI IS STRONG (depth 10, PVS)
+--------------------------------------------------------------------------------
+Moderate uses Iterative Deepening + Principal Variation Search to depth 10.
+It sees 10 half-moves ahead. Beating it requires near-perfect play.
+
+TRICK 1: USE THE SOLVED OPENING
+  Move 1: Column 3 (mandatory)
+  Move 2: If CPU plays 3, play 2 or 4. If CPU plays 2, play 4. If CPU plays 4, play 2.
+  Move 3: Build toward a fork. Prefer columns 2, 3, 4 early - control the center.
+
+TRICK 2: FORCE THE CPU TO BLOCK IN A BAD SPOT
+  Create a threat where the only block leaves the CPU's piece in a position
+  that helps your next threat. Example: vertical R-R-R in col 2. CPU must
+  block col 2. Their piece lands at bottom. You play col 3 - now you have
+  a diagonal starting from that bottom piece. The block helped you.
+
+TRICK 3: AVOID OBVIOUS TRAPS
+  The AI checks for double threats and forks. Do not set up a fork that
+  takes 2 moves to complete - the AI will see it. Instead, set up a fork
+  that completes in 1 move (two 3-in-a-rows that both need one more in
+  different columns). The AI cannot block both.
+
+TRICK 4: PLAY THE OPPOSITE SIDE OF CPU'S STACK
+  If CPU stacks column 3, build on 2 and 4. If CPU stacks 2, build on 3 and 4.
+  You want options on both sides so the CPU cannot block everything.
+
+--------------------------------------------------------------------------------
+HARD MODE - THE AI IS VERY STRONG (DP + memoization)
+--------------------------------------------------------------------------------
+Hard uses transposition table - it remembers positions and searches efficiently.
+Depth 6 with memoization. Very difficult to beat.
+
+TRICK 1: PERFECT OPENING ONLY
+  You must play the solved opening. Any mistake in the first 4 moves and
+  the CPU will outplay you. R3, then R2 or R4 depending on CPU. Never
+  play edge columns (0, 6) early unless following a specific trap.
+
+TRICK 2: PATIENCE
+  Do not rush. Build solidly. One weak move and the CPU will punish.
+  Prefer moves that both attack and defend.
+
+TRICK 3: IF YOU FALL BEHIND
+  The CPU will not make obvious mistakes. If you are losing, try to
+  force a draw by blocking all of CPU's winning paths. A draw is
+  better than a loss.
+
+--------------------------------------------------------------------------------
+UNIVERSAL TRICKS (ALL DIFFICULTIES)
+--------------------------------------------------------------------------------
+
+1. CENTER CONTROL
+   Columns 2, 3, 4 are strongest. Fight for them. If CPU has center,
+   attack from both sides (cols 1 and 5, or 0 and 6).
+
+2. BLOCK AND BUILD
+   When you must block CPU's threat, try to block in a column that
+   also extends your own 2-in-a-row. One move, two purposes.
+
+3. BOTTOM ROW FIRST
+   Pieces at the bottom support everything above. Prefer building
+   from the bottom. A piece at row 2 with empty rows below is weak.
+
+4. DIAGONALS WIN GAMES
+   Horizontal and vertical are obvious. Diagonals are harder to see
+   and block. Build diagonals: (5,2)-(4,3)-(3,4)-(2,5) or similar.
+
+5. THE FORCED BLOCK
+   Create a threat. CPU blocks. Use that block to start your next
+   threat. The CPU's "block" becomes part of your winning line.
+
+--------------------------------------------------------------------------------
+QUICK REFERENCE - FIRST 4 MOVES (YOU ARE RED)
+--------------------------------------------------------------------------------
+Move 1: 3 (always)
+Move 2: If Y3 -> play 2. If Y2 -> play 4. If Y4 -> play 2. If Y1/Y5 -> play 3.
+Move 3: Build toward fork. Usually 4 (if you played 2) or 2 (if you played 4).
+Move 4: Create second threat or block CPU. Aim for two 3-in-a-rows.
+
+--------------------------------------------------------------------------------
+HONEST ASSESSMENT
+--------------------------------------------------------------------------------
+EASY:    Follow the exact sequences. Double threats work. You should win.
+MODERATE: Hard. AI sees 10 moves ahead. Use perfect opening; hope AI slips.
+HARD:    Very hard. Near-perfect play needed. Draw is a good result.
+
+================================================================================
