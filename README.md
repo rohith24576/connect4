@@ -1,95 +1,83 @@
-# Connect 4 - Algorithm Showcase
+# Connect 4: A Multi-Paradigm Algorithmic Assessment Framework
 
-A premium, modern Connect 4 implementation in Java featuring a variety of computer science algorithms, from Divide and Conquer to advanced Backtracking with Iterative Deepening.
+A sophisticated implementation of the classic Connect 4 game, engineered as a comprehensive demonstration of progressive algorithmic complexity. This project showcases the application of diverse computer science paradigms, ranging from recursive divide-and-conquer strategies to advanced state-space search optimizations.
 
-![Connect 4 Gameplay](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
-![Swing UI](https://img.shields.io/badge/UI-Swing-blue?style=for-the-badge)
-![Algorithms](https://img.shields.io/badge/Algorithms-D%26C%20%7C%20DP%20%7C%20Backtracking-brightgreen?style=for-the-badge)
+## Technical Overview
 
-## 🌟 Overview
+The framework is designed to provide a tiered challenge through three distinct AI architectures, each representing a different computational approach to game theory and decision-making. The system integrates a modern Java Swing-based interface with a high-performance backend, ensuring both visual clarity and algorithmic rigor.
 
-This project is not just a game; it's an algorithmic deep-dive into game theory and search optimization. Built with a modern Neumorphic UI, it allows players to challenge an AI that utilizes different computational strategies based on the selected difficulty level.
+## System Architectures
 
-## 🚀 Key Features
+### Tier 1: Recursive Heuristics (Efficiency Focus)
 
-- **Modern Neumorphic Design**: A sleek, card-based UI with subtle shadows and a curated color palette.
-- **Three Distinct AI Difficulties**:
-  - 🟢 **Easy**: Uses **Divide & Conquer** and **Greedy** heuristics.
-  - 🟡 **Moderate**: Leverages **Dynamic Programming** with Minimax and Memoization.
-  - 🔴 **Hard**: Employs advanced **Backtracking** with Iterative Deepening and Principal Variation Search (PVS).
-- **Real-time Score Tracking**: Keeps track of player wins, AI wins, and draws.
-- **Detailed Complexity Analysis**: Every algorithm is documented with its Big O time complexity.
+The entry-level AI utilizes a **Divide and Conquer** paradigm coupled with **Greedy** evaluation.
 
-## 🧠 Algorithmic Implementation
+- **Win Detection**: Employs recursive spatial partitioning to identify four-in-a-row sequences in $O(R \times C)$ time.
+- **Evaluation Engine**: Board states are decomposed into quadrants for parallelizable assessment, followed by a weighted aggregation of quadrant scores.
+- **Decision Logic**: Prioritizes immediate state transitions that yield a terminal win or prevent an immediate loss.
 
-### 1. Divide & Conquer + Greedy (Easy)
+### Tier 2: State-Space Memoization (Storage Focus)
 
-- **Win Detection**: Uses recursive range splitting to check for four-in-a-row in $O(R \times C)$ time.
-- **Position Evaluation**: Divides the board into quadrants, evaluates them independently, and combines the results.
-- **Greedy Selection**: Prioritizes immediate wins and blocks without deep searching.
+The moderate-tier AI implements **Minimax Search** enhanced by **Dynamic Programming** techniques to manage the exponential growth of the game tree.
 
-### 2. Dynamic Programming (Moderate)
+- **Transposition Management**: Utilizes **Zobrist Hashing** for $O(1)$ state fingerprinting and retrieval, significantly reducing redundant computations in overlapping subproblems.
+- **Memoization Layer**: Stores evaluated depths and score bounds (Exact, Lower, Upper) to prune entire branches based on historical search data.
+- **Resource Control**: Features a bounded cache eviction strategy to maintain performance within strict memory constraints.
 
-- **Minimax with Memoization**: Explores game states and caches them to avoid redundant calculations.
-- **Transposition Tables**: Uses Zobrist Hashing ($O(R \times C)$) to uniquely identify board states for $O(1)$ lookup.
-- **State Efficiency**: Implements bounded cache eviction to manage memory effectively.
+### Tier 3: Search Space Optimization (Time Focus)
 
-### 3. Backtracking & Search Optimization (Hard)
+The elite-tier AI employs advanced **Backtracking** and competitive search enhancements for deep-ply strategic planning.
 
-- **Iterative Deepening**: Progressively searches deeper (Depth 2, 4, 6...) until the search limit is reached.
-- **Principal Variation Search (PVS)**: A highly optimized version of Alpha-Beta pruning that uses null-window searches for non-PV moves.
-- **Move Ordering**: Uses Heuristic scoring (Center priority, Threat/Block scores) and Killer Moves to maximize pruning efficiency.
+- **Iterative Deepening**: Dynamically adjusts search depth to maximize utility within computational time limits.
+- **Principal Variation Search (PVS)**: Optimized Alpha-Beta pruning that utilizes null-window searches to confirm the superiority of the principal variation.
+- **Heuristic Move Ordering**: Integrates Killer Move heuristics and History heuristics to prioritize high-value moves, maximizing the probability of early cutoffs.
 
-## 📂 Project Structure
+## Implementation Details
 
-```bash
-├── Main.java                 # Entry point of the application
-├── Connect4UI.java           # Main Swing interface and UI logic
-├── Board.java                # Core board state and move validation
-├── Connect4AI.java           # Central controller for AI decision making
-├── DivideAndConquerGreedy.java     # Logic for the Easy difficulty algorithms
-├── DynamicProgrammingAlgorithms.java # Memoization and hashing implementations
-├── BacktrackingAlgorithms.java       # Deep search and PVS implementations
-└── timecomplexity.txt        # Comprehensive analysis of all method complexities
-```
+The codebase is organized into modular components to facilitate architectural clarity:
 
-## 🛠️ Getting Started
+- **`Main.java`**: Orchestrates the application lifecycle and UI initialization.
+- **`Connect4UI.java`**: Implements a high-fidelity, Neumorphic user interface with asynchronous AI processing.
+- **`Board.java`**: Manages the immutable game state and move validation protocols.
+- **`Connect4AI.java`**: Serves as the strategy dispatcher for the various AI modules.
+- **`DivideAndConquerGreedy.java`**: Contains logic for recursive partitioning and greedy heuristics.
+- **`DynamicProgrammingAlgorithms.java`**: Handles hashing, transposition tables, and memoized search.
+- **`BacktrackingAlgorithms.java`**: Implements global search optimizations and competitive game theory algorithms.
+
+## Computational Complexity Summary
+
+| Component                | Methodology                  | Complexity                       |
+| :----------------------- | :--------------------------- | :------------------------------- |
+| **State Fingerprinting** | Zobrist Hashing              | $O(R \times C)$                  |
+| **Win Validation**       | Sequential Scan (Optimized)  | $O(R \times C)$                  |
+| **Memoized Search**      | Transposition Table Lookup   | $O(1)$ (Average Case)            |
+| **Strategic Search**     | PVS with Iterative Deepening | $O(b^{d/2})$ (Empirical Average) |
+| **Move Security**        | Multi-Ply Safety Analysis    | $O(R \times C^4)$                |
+
+For a granular analysis of all implemented methods, please consult the [Technical Complexity Specification](./timecomplexity.txt).
+
+## Deployment and Execution
 
 ### Prerequisites
 
-- Java Development Kit (JDK) 8 or higher.
+- Java Development Kit (JDK) 8.0 or higher.
 
-### Installation & Execution
+### Compilation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Sreeram5678/connect4.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd connect4
-   ```
-3. Compile the project:
-   ```bash
-   javac *.java
-   ```
-4. Run the application:
-   ```bash
-   java Main
-   ```
+From the project root directory, execute:
 
-## 📊 Complexity Summary
+```bash
+javac *.java
+```
 
-| Method           | Algorithm File                 | Time Complexity                         |
-| :--------------- | :----------------------------- | :-------------------------------------- |
-| `checkWin`       | `DivideAndConquerGreedy`       | $O(R \times C)$                         |
-| `evaluateCached` | `DynamicProgrammingAlgorithms` | $O(1)$ cache hit / $O(R \times C)$ miss |
-| `isSafeMove`     | `BacktrackingAlgorithms`       | $O(R \times C^4)$ (3-ply check)         |
-| `minimaxMemo`    | `DynamicProgrammingAlgorithms` | $O(\text{unique states})$ with TT       |
-| `pvsSearch`      | `BacktrackingAlgorithms`       | $O(b^{d/2})$ with optimal pruning       |
+### Execution
 
-_For a full breakdown, refer to [timecomplexity.txt](./timecomplexity.txt)._
+Launch the framework using the following command:
+
+```bash
+java Main
+```
 
 ---
 
-Designed with ❤️ for Algorithmic Excellence.
+_Developed as a repository for algorithmic research and demonstration._
