@@ -1,0 +1,323 @@
+================================================================================
+                    TEAM CONTRIBUTION - 4 MEMBERS
+================================================================================
+Each member: 1 method in DivideAndConquerGreedy + 1 in BacktrackingAlgorithms
+             + 2 methods in DynamicProgrammingAlgorithms
+
+Backtracking (Hard): 4 methods - Iterative Deepening + Principal Variation
+Search (PVS), 2-ply safety check for double threats, killer/history move ordering.
+Depth 2 to 10. Stronger than basic minimax.
+
+Goal: Minimize "collision" - a member's methods should NOT call another member's
+      contributed methods (or minimize such dependencies for clean explanation).
+================================================================================
+
+--------------------------------------------------------------------------------
+QUICK REFERENCE - WHO OWNS WHAT
+--------------------------------------------------------------------------------
+                    D&C Greedy    Backtracking    DP (2 each)
+Member 1            checkWin      findImmediateWin   tryImmediateWin, computeZobristHash
+Member 2            findValidMovesDnC  isSafeMove    evaluateCached, lookupTransposition
+Member 3            evaluatePositionDnC  findBestMoveMinimax  storeTransposition, orderMovesByHeuristic
+Member 4            findBestMoveGreedy  findBestMoveThreatHeuristic  findBestMoveHard, minimaxMemo
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+COMPLETE FUNCTION CALL GRAPH - WHERE EACH FUNCTION IS CALLED FROM
+--------------------------------------------------------------------------------
+(Every function in the project and its exact callers. All calls verified in codebase.)
+
+--- Main.java (Entry point) ---
+  main(String[] args)
+    CALLED FROM: JVM (program entry)
+    CALLS: SwingUtilities.invokeLater -> new Connect4UI()
+
+--- Connect4UI.java (UI - calls Connect4AI) ---
+  Connect4UI() constructor
+    CALLED FROM: Main.main
+    CALLS: winChecker.printAlgorithmInfo(), showGameModeDialog(), setupUI()
+
+  getAIMoveByDifficulty(player)
+    CALLED FROM: Connect4UI.handleColumnClick (line 540) inside SwingWorker.doInBackground
+    CALLS: winChecker.findBestMove (EASY) / findBestMoveModerate (MODERATE) / findBestMoveHard (HARD)
+
+  checkGameEnd()
+    CALLED FROM: Connect4UI.handleColumnClick, makeMove (after each move)
+    CALLS: winChecker.checkWin(currentPlayer)
+
+--- Connect4AI.java (Coordinator - called by Connect4UI) ---
+  checkWin(player)
+    CALLED FROM: Connect4UI.checkGameEnd (line 594)
+    CALLS: dnc.checkWin(player)
+
+  findBestMove(player)
+    CALLED FROM: Connect4UI.getAIMoveByDifficulty (line 566) when difficulty=EASY or default
+    CALLS: backtracking.findImmediateWin, findImmediateBlock; dnc.findValidMovesDnC;
+           backtracking.isSafeMove, findBestMoveThreatHeuristic; dnc.findBestMoveGreedy
+
+  findBestMoveModerate(player)
+    CALLED FROM: Connect4UI.getAIMoveByDifficulty (line 568) when difficulty=MODERATE
+    CALLS: dp.findBestMoveHard(player, 4)
+
+  findBestMoveHard(player)
+    CALLED FROM: Connect4UI.getAIMoveByDifficulty (line 570) when difficulty=HARD
+    CALLS: backtracking.findBestMoveMinimaxBacktracking(player, 6)
+
+  printAlgorithmInfo()
+    CALLED FROM: Connect4UI.Connect4UI constructor (line 84)
+    CALLS: (prints to console only)
+
+--- DivideAndConquerGreedy.java (D&C) ---
+  checkWin(player)
+    CALLED FROM: BacktrackingAlgorithms.checkPlayerWins (BT1, BT2, BT3, BT4)
+    CALLED FROM: DynamicProgrammingAlgorithms.tryImmediateWinStack (DP2)
+    CALLED FROM: DynamicProgrammingAlgorithms.getThreatScore, minimaxMemo (DP7, DP8)
+    CALLED FROM: DivideAndConquerGreedy.isWinningMove, evaluateColumnScore (D&C4 via WinChecker)
+    CALLED FROM: Connect4AI.checkWin (forwards to dnc.checkWin)
+    CALLS: checkHorizontalDnC, checkVerticalDnC, checkDiagonalDownDnC, checkDiagonalUpDnC
+
+  findValidMovesDnC(start, end)
+    CALLED FROM: BacktrackingAlgorithms.findBestMoveMinimaxBacktracking, pvs, findBestMoveThreatHeuristic (BT3, BT4)
+    CALLED FROM: DynamicProgrammingAlgorithms.findBestMoveHard, minimaxMemo (DP1, DP8)
+    CALLED FROM: Connect4AI.findBestMove (line 34)
+    CALLS: findValidMovesDnCGreedy
+
+  evaluatePositionDnC(player)
+    CALLED FROM: BacktrackingAlgorithms.pvs (BT3)
+    CALLED FROM: DynamicProgrammingAlgorithms.evaluateCached (DP4)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (DP8)
+    CALLED FROM: DivideAndConquerGreedy.evaluateColumnScore (D&C4)
+    CALLS: evaluateQuadrant, countConnectedDnC
+
+  findBestMoveGreedy(player, columns, winChecker, safeChecker)
+    CALLED FROM: Connect4AI.findBestMove (line 49) when safe moves exist
+    CALLS: findBestMoveGreedyRecurse -> isWinningMove, chooseBetter, evaluateColumnScore
+
+--- BacktrackingAlgorithms.java ---
+  findImmediateWin(player)
+    CALLED FROM: Connect4AI.findBestMove (line 29)
+    CALLED FROM: BacktrackingAlgorithms.findImmediateBlock (line 78)
+    CALLED FROM: BacktrackingAlgorithms.findBestMoveMinimaxBacktracking (line 258)
+    CALLED FROM: BacktrackingAlgorithms.findBestMoveThreatHeuristic (lines 426, 429)
+    CALLS: orderColumnsByCenterPriority, findImmediateWinDnC, pickBestWinningColumn, dnc.checkWin
+
+  findImmediateBlock(opponent)
+    CALLED FROM: Connect4AI.findBestMove (line 31)
+    CALLS: findImmediateWin(opponent)
+
+  isSafeMove(player, col)
+    CALLED FROM: Connect4AI.findBestMove (lines 39, 48 via SafeMoveChecker callback)
+    CALLS: createsOurFork, exploreOpponentResponses, dnc.checkWin
+
+  findBestMoveMinimaxBacktracking(player, depth)
+    CALLED FROM: Connect4AI.findBestMoveHard (line 57)
+    CALLS: findImmediateWin, dnc.findValidMovesDnC, orderMovesByHeuristic, pvs, dnc.evaluatePositionDnC
+
+  findBestMoveThreatHeuristic(player)
+    CALLED FROM: Connect4AI.findBestMove (line 41) when no safe moves exist
+    CALLS: findImmediateWin, dnc.findValidMovesDnC, scoreThreatAt, scoreBlockAt, countThreats
+
+--- DynamicProgrammingAlgorithms.java ---
+  findBestMoveHard(player, depth)
+    CALLED FROM: Connect4AI.findBestMoveModerate (line 53) with depth=4
+    CALLS: clearCache, tryImmediateWin, dnc.findValidMovesDnC, orderMovesByHeuristic, minimaxMemo
+
+  tryImmediateWin(player)
+    CALLED FROM: DynamicProgrammingAlgorithms.findBestMoveHard (lines 46, 49)
+    CALLS: tryImmediateWinStack -> dnc.checkWin
+
+  computeZobristHash()
+    CALLED FROM: DynamicProgrammingAlgorithms.evaluateCached (line 145)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (line 329)
+    CALLS: (iterates board, no external calls)
+
+  evaluateCached(player)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (line 338)
+    CALLS: computeZobristHash, dnc.evaluatePositionDnC, evictEvaluationCache
+
+  lookupTransposition(hash, depth, alpha, beta)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (line 331)
+    CALLS: (HashMap lookup only)
+
+  storeTransposition(hash, depth, score, flag)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (lines 339, 373)
+    CALLS: evictOldEntries (when cache full)
+
+  orderMovesByHeuristic(moves, player)
+    CALLED FROM: DynamicProgrammingAlgorithms.findBestMoveHard (line 57)
+    CALLED FROM: DynamicProgrammingAlgorithms.minimaxMemo (line 345)
+    CALLS: getThreatScore, getBlockScore -> dnc.checkWin
+
+  minimaxMemo(player, depth, alpha, beta, isMax)
+    CALLED FROM: DynamicProgrammingAlgorithms.findBestMoveHard (line 64)
+    CALLS: computeZobristHash, lookupTransposition, dnc.checkWin, evaluateCached,
+           storeTransposition, dnc.findValidMovesDnC, orderMovesByHeuristic
+
+  clearCache()
+    CALLED FROM: DynamicProgrammingAlgorithms.findBestMoveHard (line 43)
+    CALLS: (clears transpositionTable, evaluationCache, winMoveCache, moveOrderCache)
+
+--- Board.java (used by all algorithm classes and UI) ---
+  insertDisc(col, player)
+    CALLED FROM: All algorithm classes (simulate moves), Connect4UI.makeMove
+  removeDisc(col)
+    CALLED FROM: All algorithm classes (undo moves)
+  isValidMove(col)
+    CALLED FROM: Connect4UI.handleColumnClick, all algorithm classes
+  getBoard(), getRows(), getCols()
+    CALLED FROM: All algorithm classes, Connect4UI
+  isBoardFull()
+    CALLED FROM: BacktrackingAlgorithms.findImmediateWin, DynamicProgrammingAlgorithms.minimaxMemo, Connect4UI.checkGameEnd
+  initializeBoard()
+    CALLED FROM: Board constructor, Connect4UI.resetGame
+
+--------------------------------------------------------------------------------
+CALL GRAPH SUMMARY (who calls whom)
+--------------------------------------------------------------------------------
+
+D&C METHODS (called by):
+  checkWin (D&C 1)        <- BT1, BT2, BT3, BT4, DP2, DP7, DP8, D&C4, Connect4AI
+  findValidMovesDnC (D&C2) <- BT3, BT4, DP1, DP8, Connect4AI
+  evaluatePositionDnC (D&C3) <- BT3, DP4, DP8, D&C4
+  findBestMoveGreedy (D&C4) <- Connect4AI (Easy mode)
+
+BACKTRACKING METHODS (called by):
+  findImmediateWin (BT1)   <- Connect4AI, findImmediateBlock, BT3, BT4
+  findImmediateBlock (BT1b) <- Connect4AI
+  isSafeMove (BT2)         <- Connect4AI
+  findBestMoveMinimax (BT3) <- Connect4AI (Hard)
+  findBestMoveThreatHeur (BT4) <- Connect4AI (when no safe moves)
+
+DP METHODS (called by):
+  findBestMoveHard (DP1)   <- Connect4AI (Moderate)
+  tryImmediateWin (DP2)    <- DP1
+  computeZobristHash (DP3) <- DP4, DP8
+  evaluateCached (DP4)     <- DP8
+  lookupTransposition (DP5) <- DP8
+  storeTransposition (DP6) <- DP8
+  orderMovesByHeuristic(DP7) <- DP1, DP8
+  minimaxMemo (DP8)        <- DP1
+  clearCache()             <- DP1
+
+--------------------------------------------------------------------------------
+COLLISION ANALYSIS - Current assignment (Member N = Method N in each file)
+--------------------------------------------------------------------------------
+
+Current: Member1=D&C1+BT1+DP1+DP2, Member2=D&C2+BT2+DP3+DP4, etc.
+
+Member 1's methods CALL:
+  DP1 -> DP2 (own), D&C2 (Member2), DP7 (Member4), DP8 (Member4)  [COLLISION: M2, M4]
+  DP2 -> D&C1 (own)  [OK - own]
+  BT1 -> D&C1 (own)  [OK - own]
+
+Member 2's methods CALL:
+  DP4 -> DP3 (own), D&C3 (Member3)  [COLLISION: M3]
+  D&C2 -> (none from other members)  [OK]
+
+Member 3's methods CALL:
+  BT3 -> BT1 (Member1), D&C2 (Member2), D&C1 (Member1), D&C3 (own)  [COLLISION: M1, M2]
+  DP5, DP6 -> (none - they are utilities)  [OK]
+
+Member 4's methods CALL:
+  BT4 -> BT1 (Member1), D&C2 (Member2)  [COLLISION: M1, M2]
+  D&C4 -> D&C1 (Member1), D&C3 (Member3)  [COLLISION: M1, M3]
+  DP7 -> D&C1 (Member1)  [COLLISION: M1]
+  DP8 -> DP3 (Member2), DP5 (Member3), DP4 (Member2), DP6 (Member3), DP7 (own),
+         D&C2 (Member2), D&C1 (Member1)  [COLLISION: M1, M2, M3]
+
+CONCLUSION: Full avoidance of collisions is IMPOSSIBLE - the design has a natural
+dependency chain. The best we can do is assign so that:
+  (a) Each member's methods have MINIMAL cross-calls to other members
+  (b) "Leaf" methods (called by many, call few) go to one member
+  (c) "Root" methods (call many, called by few) go to another
+
+--------------------------------------------------------------------------------
+RECOMMENDED ASSIGNMENT (minimizes collision, balanced workload)
+--------------------------------------------------------------------------------
+
+MEMBER 1: D&C checkWin, BT findImmediateWin, DP tryImmediateWin, DP computeZobristHash
+  - D&C1: Foundation - win detection. Called by almost everyone. No cross-calls.
+  - BT1: Win search with D&C recursion. Center-first ordering (orderColumnsByCenterPriority),
+    board-full/empty short-circuits, findImmediateBlock, pickBestWinningColumn. Calls D&C1 (own).
+  - DP2: Win search with stack recursion. Calls only D&C1 (M1's own). Clean.
+  - DP3: Zobrist hash. No calls to other members. Isolated.
+  COLLISION: NONE (Member 1's methods only call own D&C1 or are leaf utilities)
+
+MEMBER 2: D&C findValidMovesDnC, BT isSafeMove, DP evaluateCached, DP lookupTransposition
+  - D&C2: Valid moves. Called by many. No cross-calls to other members.
+  - BT2: Safety check with 2-ply and 3-ply lookahead. createsOurFork (our double threat = safe),
+    hasDoubleThreat, allowsOpponentForkNext, isTrappedInTwo (forced loss in 2). Calls D&C1 (M1).
+  - DP4: Evaluation cache. Calls DP3 (M1), D&C3 (M3). [Collision: M1, M3]
+  - DP5: TT lookup. No calls. Isolated.
+  COLLISION: BT2 and DP4 call M1; DP4 calls M3. Moderate.
+
+MEMBER 3: D&C evaluatePositionDnC, BT findBestMoveMinimaxBacktracking, DP storeTransposition, DP orderMovesByHeuristic
+  - D&C3: Position evaluation. Called by BT3, DP4, DP8, D&C4. No cross-calls.
+  - BT3: Iterative Deepening + Principal Variation Search (PVS). Depth 2 to 10. Killer + history
+    move ordering. Calls BT1 (M1), D&C2 (M2), D&C1 (M1), D&C3 (own). [Collision: M1, M2]
+  - DP6: Store + evict. No calls to other members. Isolated.
+  - DP7: Move ordering. Calls D&C1 via getThreatScore (M1). [Collision: M1]
+  COLLISION: BT3 calls M1, M2; DP7 calls M1. Moderate.
+
+MEMBER 4: D&C findBestMoveGreedy, BT findBestMoveThreatHeuristic, DP findBestMoveHard, DP minimaxMemo
+  - D&C4: Greedy best move. Calls D&C1, D&C3 (via callbacks). [Collision: M1, M3]
+  - BT4: Threat heuristic with double-threat detection. Calls BT1 (M1), D&C2 (M2). [Collision: M1, M2]
+  - DP1: Root search. Calls DP2 (M1), D&C2 (M2), DP7 (M3), DP8 (own). [Collision: M1, M2, M3]
+  - DP8: Minimax with memo. Calls DP3 (M1), DP5 (M2), DP4 (M2), DP6 (M3), DP7 (M3),
+         D&C2 (M2), D&C1 (M1). [Collision: M1, M2, M3 - HEAVY]
+  COLLISION: Member 4 is the "orchestrator" - calls everyone. Unavoidable.
+
+--------------------------------------------------------------------------------
+FINAL ASSIGNMENT (best balance - Member 4 accepts orchestrator role)
+--------------------------------------------------------------------------------
+
+MEMBER 1:
+  DivideAndConquerGreedy:  checkWin (Method 1)
+  BacktrackingAlgorithms:  findImmediateWin (Method 1)
+  DynamicProgrammingAlgo:  tryImmediateWin (Method 2), computeZobristHash (Method 3)
+
+MEMBER 2:
+  DivideAndConquerGreedy:  findValidMovesDnC (Method 2)
+  BacktrackingAlgorithms:  isSafeMove (Method 2)
+  DynamicProgrammingAlgo:  evaluateCached (Method 4), lookupTransposition (Method 5)
+
+MEMBER 3:
+  DivideAndConquerGreedy:  evaluatePositionDnC (Method 3)
+  BacktrackingAlgorithms:  findBestMoveMinimaxBacktracking (Method 3)
+  DynamicProgrammingAlgo:  storeTransposition + evictOldEntries (Method 6),
+                           orderMovesByHeuristic (Method 7)
+
+MEMBER 4:
+  DivideAndConquerGreedy:  findBestMoveGreedy (Method 4)
+  BacktrackingAlgorithms:  findBestMoveThreatHeuristic (Method 4)
+  DynamicProgrammingAlgo:  findBestMoveHard (Method 1), minimaxMemo (Method 8)
+
+--------------------------------------------------------------------------------
+COLLISION SUMMARY (who calls whose methods)
+--------------------------------------------------------------------------------
+
+Member 1 -> called by: M2 (BT2, DP4*), M3 (BT3, DP7), M4 (D&C4, BT4, DP1, DP8)
+  *DP4's evaluateCached uses computeZobristHash which is DP3 - but we assigned
+   DP3 to M1, so evaluateCached calls M1's computeZobristHash. DP4 is M2.
+   So: M2's DP4 calls M1's DP3. OK.
+
+Member 2 -> called by: M3 (BT3), M4 (BT4, DP1, DP8)
+
+Member 3 -> called by: M2 (DP4), M4 (DP1, DP8)
+
+Member 4 -> called by: (only Connect4AI / external - no other member calls M4)
+
+Result: Member 1 = foundation (everyone uses). Member 4 = orchestrator (uses everyone).
+        Members 2 and 3 = middle layer. This is the natural architecture.
+
+--------------------------------------------------------------------------------
+FOR FACULTY EXPLANATION
+--------------------------------------------------------------------------------
+
+Each member can say:
+  - "My methods provide [X]. Other members' methods [Y] and [Z] use my [X] because..."
+  - Collision is EXPECTED in a layered design: foundation -> utilities -> orchestrator.
+  - No member "owns" code that ONLY calls another member without adding value.
+  - Every member's methods have distinct algorithm purpose (D&C, backtracking, DP).
+
+================================================================================
