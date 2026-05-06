@@ -56,24 +56,36 @@ The codebase is organized into modular components for architectural clarity:
 
 For a detailed analysis, refer to the [Technical Complexity Specification](./timecomplexity.txt).
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+Follow these instructions to get a local copy of the project up and running.
 
-- Java Development Kit (JDK) 8.0 or higher.
+### 📋 Prerequisites
 
-### Compilation
+Ensure you have the following installed on your system:
+- **Java Development Kit (JDK)**: Version 8.0 or higher.
+- **Git**: For cloning the repository.
 
-From the project root directory, run:
+### ⚙️ Installation & Execution
 
-```bash
-javac *.java
-```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/rohith24576/connect4.git
+   cd connect4
+   ```
 
-### Execution
+2. **Compile the Source Code**
+   Use the Java compiler to build the project:
+   ```bash
+   javac *.java
+   ```
 
-Launch the game with:
+3. **Run the Application**
+   Launch the game using the Java runtime:
+   ```bash
+   java Main
+   ```
 
-```bash
-java Main
-```
+### 💡 Quick Tips
+- Ensure your terminal is at the project root directory before running the commands.
+- If you encounter any UI scaling issues, ensure your JDK is up to date.
